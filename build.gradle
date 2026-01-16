@@ -21,10 +21,12 @@ application {
     mainClass = 'Main'
 }
 
-tasks.named('run') {
-    // Forward standard input so Scanner(System.in) works
+tasks.named('run', JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass.set('Main')
     standardInput = System.in
 }
+
 
 tasks.register('runGame', JavaExec) {
     group = 'application'
@@ -33,3 +35,33 @@ tasks.register('runGame', JavaExec) {
     mainClass.set('Main')
     standardInput = System.in
 }
+
+tasks.register('runCwd', JavaExec) {
+    group = 'application'
+    description = 'Run using javaExec with cwd build/classes/java/main'
+    workingDir = file("$buildDir/classes/java/main")
+    classpath = files("$buildDir/classes/java/main", "$buildDir/resources/main")
+    mainClass.set('Main')
+    standardInput = System.in
+}
+
+tasks.register('runPlain', JavaExec) {
+    group = 'application'
+    description = 'Run using only compiled classes (matches: java -cp build/classes/java/main Main)'
+    dependsOn(tasks.named('classes'))
+    classpath = files("$buildDir/classes/java/main")
+    mainClass.set('Main')
+    standardInput = System.in
+}
+tasks.register('runShell') {
+    group = 'application'
+    description = 'Run using the exact working command via shell'
+    dependsOn tasks.named('classes')
+    doLast {
+        exec {
+            commandLine 'bash', '-lc', 'java -cp build/classes/java/main Main'
+            standardInput = System.in
+        }
+    }
+}
+
