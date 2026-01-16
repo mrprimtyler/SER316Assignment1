@@ -12,44 +12,49 @@ public class GameEngine {
     public GameEngine(int min, int max) {
         this.min = min;
         this.max = max;
-        this.attempts = 0;
-        this.gameWon = false;
-        this.userQuit = false;
-        this.gameOver = false;
         reset();
     }
 
     public GuessResult makeGuess(int guess) {
-        // Check if user wants to quit (negative number)
+        // Quit if user enters a negative number
         if (guess < 0) {
             userQuit = true;
             return new GuessResult(false, "Exiting game...", attempts);
+        }
+
+        if (gameWon || gameOver) {
+            GuessResult r = new GuessResult(false, "Game is over. Reset to play again.", attempts);
+            r.setRemainingAttempts(Math.max(0, MAX_ATTEMPTS - attempts));
+            return r;
         }
 
         attempts++;
 
         if (guess == target) {
             gameWon = true;
-            return new GuessResult(true, "Correct! You guessed it in " + attempts + " attempts.", attempts);
-        } else if (guess < target) {
-            return new GuessResult(false, "Too low! Try a higher number.", attempts);
-        } else {
-            return new GuessResult(false, "Too high! Try a lower number.", attempts);
-
-        } else if (attempts >= MAX_ATTEMPTS) {
-            gameOver = true;
-            return new GuessResult(false, "Game Over! You've used all " + MAX_ATTEMPTS + " attempts. The number was " + target + ".", attempts);
-        } else {
-            int remaining = MAX_ATTEMPTS - attempts;
-            GuessResult result;
-            if (guess < target) {
-                result = new GuessResult(false, "Too low!", attempts);
-            } else {
-                result = new GuessResult(false, "Too high!", attempts);
-            }
-            result.setRemainingAttempts(remaining);
-            return result;
+            GuessResult r = new GuessResult(true,
+                    "Correct! You guessed it in " + attempts + " attempts.", attempts);
+            r.setRemainingAttempts(Math.max(0, MAX_ATTEMPTS - attempts));
+            return r;
         }
+
+        if (attempts >= MAX_ATTEMPTS) {
+            gameOver = true;
+            GuessResult r = new GuessResult(false,
+                    "Game Over! You've used all " + MAX_ATTEMPTS + " attempts. The number was " + target + ".", attempts);
+            r.setRemainingAttempts(0);
+            return r;
+        }
+
+        int remaining = MAX_ATTEMPTS - attempts;
+        GuessResult r;
+        if (guess < target) {
+            r = new GuessResult(false, "Too low!", attempts);
+        } else {
+            r = new GuessResult(false, "Too high!", attempts);
+        }
+        r.setRemainingAttempts(remaining);
+        return r;
     }
 
     public void reset() {
@@ -66,6 +71,8 @@ public class GameEngine {
 
     public boolean hasUserQuit() {
         return userQuit;
+    }
+
     public boolean isGameOver() {
         return gameOver;
     }
@@ -95,3 +102,4 @@ public class GameEngine {
         return target;
     }
 }
+
