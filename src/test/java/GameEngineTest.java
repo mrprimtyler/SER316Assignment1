@@ -65,4 +65,20 @@ public class GameEngineTest {
         assertEquals(1, engine.getMin());
         assertEquals(100, engine.getMax());
     }
+
+    @Test
+    public void testQuitWithNegativeNumber() {
+        engine.setTarget(50);
+        GuessResult result = engine.makeGuess(-1);
+        assertFalse(result.isCorrect());
+        assertTrue(engine.hasUserQuit());
+        assertTrue(result.getMessage().contains("Exiting"));
+    }
+
+    @Test
+    public void testQuitDoesNotIncrementAttempts() {
+        engine.setTarget(50);
+        engine.makeGuess(-1);
+        assertEquals(0, engine.getAttempts());
+    }
 }
